@@ -13,7 +13,7 @@ const path = require('path');
 
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
-const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+const ProgressBarPlugin = require('simple-progress-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const ChunkIdPrefixPlugin = require('./plugins/chunk-id-prefix-plugin.js');
 const {
@@ -54,12 +54,10 @@ const COMPILATIONS /*: {[string]: Runtime} */ = {
   'client-modern': 'client',
   sw: 'sw',
 };
-const EXCLUDE_TRANSPILATION_PATTERNS = [
-  /node_modules\/mapbox-gl\//,
-  /node_modules\/react-dom\//,
-  /node_modules\/react\//,
-  /node_modules\/core-js\//,
-];
+
+const EXCLUDE_TRANSPILATION_PATTERNS = modulePath =>
+  /node_modules/.test(modulePath) && !/fusion-/.test(modulePath);
+
 const JS_EXT_PATTERN = /\.jsx?$/;
 
 /*::
@@ -437,7 +435,9 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
       new webpack.optimize.SideEffectsFlagPlugin(),
       runtime === 'server' &&
         new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}),
-      new ProgressBarPlugin(),
+      new ProgressBarPlugin({
+        format: 'expanded',
+      }),
       runtime === 'server' &&
         new LoaderContextProviderPlugin('optsContext', opts),
       new LoaderContextProviderPlugin(devContextKey, dev),
@@ -452,9 +452,9 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
             translationsManifestContextKey,
             state.i18nManifest
           ),
-      !dev && zopfliWebpackPlugin,
-      !dev && brotliWebpackPlugin,
-      !dev && svgoWebpackPlugin,
+      // !dev && zopfliWebpackPlugin,
+      // !dev && brotliWebpackPlugin,
+      // !dev && svgoWebpackPlugin,
       // In development, skip the emitting phase on errors to ensure there are
       // no assets emitted that include errors. This fixes an issue with hot reloading
       // server side code and recovering from errors correctly. We only want to do this
@@ -548,31 +548,32 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
           },
         },
       },
-      minimizer:
-        !dev && runtime === 'client'
-          ? [
-              new TerserPlugin({
-                sourceMap: true, // default from webpack (see https://github.com/webpack/webpack/blob/aab3554cad2ebc5d5e9645e74fb61842e266da34/lib/WebpackOptionsDefaulter.js#L290-L297)
-                cache: true, // default from webpack
-                parallel: true, // default from webpack
-                terserOptions: {
-                  compress: {
-                    // typeofs: true (default) transforms typeof foo == "undefined" into foo === void 0.
-                    // This mangles mapbox-gl creating an error when used alongside with window global mangling:
-                    // https://github.com/webpack-contrib/uglifyjs-webpack-plugin/issues/189
-                    typeofs: false,
+      minimize: false,
+      // minimizer:
+      //   !dev && runtime === 'client'
+      //     ? [
+      //         new TerserPlugin({
+      //           sourceMap: true, // default from webpack (see https://github.com/webpack/webpack/blob/aab3554cad2ebc5d5e9645e74fb61842e266da34/lib/WebpackOptionsDefaulter.js#L290-L297)
+      //           cache: true, // default from webpack
+      //           parallel: true, // default from webpack
+      //           terserOptions: {
+      //             compress: {
+      //               // typeofs: true (default) transforms typeof foo == "undefined" into foo === void 0.
+      //               // This mangles mapbox-gl creating an error when used alongside with window global mangling:
+      //               // https://github.com/webpack-contrib/uglifyjs-webpack-plugin/issues/189
+      //               typeofs: false,
 
-                    // inline=2 can cause const reassignment
-                    // https://github.com/mishoo/UglifyJS2/issues/2842
-                    inline: 1,
-                  },
+      //               // inline=2 can cause const reassignment
+      //               // https://github.com/mishoo/UglifyJS2/issues/2842
+      //               inline: 1,
+      //             },
 
-                  keep_fnames: opts.preserveNames,
-                  keep_classnames: opts.preserveNames,
-                },
-              }),
-            ]
-          : undefined,
+      //             keep_fnames: opts.preserveNames,
+      //             keep_classnames: opts.preserveNames,
+      //           },
+      //         }),
+      //       ]
+      //     : undefined,
     },
   };
 }

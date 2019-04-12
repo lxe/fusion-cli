@@ -4,7 +4,7 @@
   "description": "CLI",
   "repository": "fusionjs/fusion-cli",
   "bin": {
-    "fusion": "bin/cli.js"
+    "fusion-fast-build": "bin/cli.js"
   },
   "scripts": {
     "lint": "eslint .",
@@ -52,6 +52,7 @@
     "resolve-from": "^4.0.0",
     "rimraf": "^2.6.2",
     "sade": "^1.4.1",
+    "simple-progress-webpack-plugin": "^1.1.2",
     "source-map-support": "^0.5.9",
     "terser-webpack-plugin": "^1.1.0",
     "webpack": "4.26.1",
