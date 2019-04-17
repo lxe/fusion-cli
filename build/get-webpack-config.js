@@ -81,6 +81,8 @@ export type WebpackConfigOpts = {|
   watch: boolean,
   preserveNames: boolean,
   zopfli: boolean,
+  brotli: boolean,
+  svgo: boolean,
   minify: boolean,
   state: {
     clientChunkMetadata: ClientChunkMetadataState,
@@ -108,9 +110,12 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
     state,
     fusionConfig,
     zopfli,
+    brotli,
+    svgo,
     minify,
     legacyPkgConfig = {},
   } = opts;
+
   const main = 'src/main.js';
 
   if (!fs.existsSync(path.join(dir, main))) {
@@ -285,7 +290,9 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         runtime === 'server' && {
           compiler: id => id === 'server',
           test: JS_EXT_PATTERN,
-          exclude: EXCLUDE_TRANSPILATION_PATTERNS,
+          exclude:
+            (fusionConfig.babel && fusionConfig.babel.exclude) ||
+            EXCLUDE_TRANSPILATION_PATTERNS,
           use: [
             {
               loader: babelLoader.path,
@@ -315,7 +322,9 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         (runtime === 'client' || runtime === 'sw') && {
           compiler: id => id === 'client' || id === 'sw',
           test: JS_EXT_PATTERN,
-          exclude: EXCLUDE_TRANSPILATION_PATTERNS,
+          exclude:
+            (fusionConfig.babel && fusionConfig.babel.exclude) ||
+            EXCLUDE_TRANSPILATION_PATTERNS,
           use: [
             {
               loader: babelLoader.path,
@@ -345,7 +354,9 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         runtime === 'client' && {
           compiler: id => id === 'client-legacy',
           test: JS_EXT_PATTERN,
-          exclude: EXCLUDE_TRANSPILATION_PATTERNS,
+          exclude:
+            (fusionConfig.babel && fusionConfig.babel.exclude) ||
+            EXCLUDE_TRANSPILATION_PATTERNS,
           use: [
             {
               loader: babelLoader.path,
@@ -457,8 +468,8 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
             state.i18nManifest
           ),
       !dev && zopfli && zopfliWebpackPlugin,
-      !dev && brotliWebpackPlugin,
-      !dev && svgoWebpackPlugin,
+      !dev && brotli && brotliWebpackPlugin,
+      !dev && svgo && svgoWebpackPlugin,
       // In development, skip the emitting phase on errors to ensure there are
       // no assets emitted that include errors. This fixes an issue with hot reloading
       // server side code and recovering from errors correctly. We only want to do this

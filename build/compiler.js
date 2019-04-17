@@ -119,6 +119,8 @@ type CompilerOpts = {
   logger?: any,
   preserveNames?: boolean,
   zopfli?: boolean,
+  brotli?: boolean,
+  svgo?: boolean,
   minify?: boolean
 };
 */
@@ -133,6 +135,8 @@ function Compiler(
     watch = false,
     logger = console,
     zopfli = true,
+    brotli = true,
+    svgo = true,
     minify = true,
   } /*: CompilerOpts */
 ) /*: CompilerType */ {
@@ -170,6 +174,8 @@ function Compiler(
     legacyPkgConfig,
     preserveNames,
     zopfli,
+    brotli,
+    svgo,
     minify,
   };
 

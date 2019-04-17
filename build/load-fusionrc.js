@@ -17,7 +17,7 @@ let loggedNotice = false;
 
 /*::
 export type FusionRC = {
-  babel?: {plugins?: Array<any>, presets?: Array<any>},
+  babel?: {plugins?: Array<any>, presets?: Array<any>, exclude?: mixed},
   assumeNoImportSideEffects?: boolean,
   experimentalCompile?: boolean,
   nodeBuiltins?: {[string]: any},
@@ -70,10 +70,12 @@ function isValid(config) {
 
   if (
     config.babel &&
-    !Object.keys(config.babel).every(el => ['plugins', 'presets'].includes(el))
+    !Object.keys(config.babel).every(el =>
+      ['plugins', 'presets', 'exclude'].includes(el)
+    )
   ) {
     throw new Error(
-      `Only "plugins" and "presets" are supported in fusionrc.js babel config`
+      `Only "plugins", "presets", and "exclude" are supported in fusionrc.js babel config`
     );
   }
 
